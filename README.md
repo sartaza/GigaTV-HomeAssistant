@@ -10,50 +10,89 @@ Este manual detalla cómo reciclar un Android TV Box GigaTV HD870 4K para conver
     Sistema Operativo: Armbian (Debian) instalado en la eMMC interna.
 
     Plataforma: Home Assistant Supervised (Docker).
+    📖 Manual: Servidor Home Assistant en GigaTV (S905X)
+    
+🏗️ Parte 0: Instalación del Sistema Operativo (Armbian)
 
-🏗️ Fases del Proyecto
-1. Preparación y S.O.
+El GigaTV requiere un "punto de entrada" mediante tarjeta SD antes de pasar el sistema a la memoria interna (eMMC).
 
-    Instalación de Armbian mediante tarjeta SD.
+    Descarga de la Imagen: Busca la imagen de Armbian para Amlogic S905X (arquitectura arm64). Se recomienda Debian 12 (Bookworm) para asegurar compatibilidad con Docker.
 
-    Migración del sistema a la memoria eMMC para mayor velocidad y fiabilidad (evitando fallos de tarjetas SD).
+    Quemado de la SD: Usa BalenaEtcher en una microSD de al menos 16GB (Clase 10).
 
-    Instalación de dependencias de Docker y AppArmor.
+    Configuración del DTB (Vital): * Abre la SD en tu PC y ve a /dtb/amlogic/.
 
-2. Despliegue de Home Assistant
+        Localiza el archivo para S905X (ej: meson-gxl-s905x-p212.dtb).
 
-    Instalación del Supervisor para tener control total de los Add-ons.
+        Edita el archivo uEnv.txt en la raíz de la SD y asegúrate de que la línea dtb_name apunte a ese archivo.
 
-    Configuración de Google Drive Backup: Imprescindible para no perder datos.
+    Primer Arranque: * Introduce la SD en el GigaTV.
 
-    Instalación de Samba Share y File Editor para gestionar archivos desde el PC.
+        Introduce un palillo en el puerto AV (botón reset oculto), mantén presionado y conecta la alimentación.
 
-🌐 3. Configuración de Red (Especial Router ZTE)
+        Suelta cuando veas el logo de Armbian.
 
-Para acceder desde fuera de casa, hemos configurado el router ZTE:
+⚙️ Parte 1: Configuración Inicial de Armbian
 
-    IP Estática (DHCP Binding): Asignar una IP fija (ej. 192.168.1.100) para que el servidor siempre esté en el mismo sitio.
+    Credenciales por defecto: Usuario: root | Password: 1234 (el sistema pedirá cambiarla).
 
-    Port Forwarding: Abrir el puerto 8123 TCP hacia la IP del GigaTV.
+    Migración a eMMC: Una vez estable, ejecuta el comando armbian-install para pasar el sistema de la SD a la memoria interna del GigaTV.
 
-    💡 Tip de Experto: Si el router da error "Invalid operation", apaga el GigaTV un momento para liberar la IP dinámica antes de fijarla.
+🚀 Parte 2: Despliegue de Home Assistant y Add-ons
 
-🔒 Seguridad y Acceso Remoto
+Tras instalar Home Assistant Supervised, ve a Ajustes > Complementos e instala estos pilares:
 
-    Acceso verificado: Acceso externo funcional vía IP Pública.
+    File Editor: Para editar configuraciones YAML desde el navegador.
 
-    Próximo paso: Implementar DuckDNS para acceso mediante nombre de dominio seguro.
+    Samba Share: Acceso a las carpetas del servidor desde Windows/Mac como disco en red.
 
-    Protección: Activación de MFA (Autenticación de dos factores) para el usuario principal.
+    Google Drive Backup: Copias de seguridad automáticas en la nube.
 
-📦 Gestión de la Comunidad (HACS)
+    HACS (Community Store): La tienda "no oficial" para integraciones avanzadas.
 
-Para instalar la tienda de la comunidad (HACS) en este sistema:
-Bash
+        Instalación: cd /usr/share/hassio/homeassistant && wget -O - https://get.hacs.xyz | bash -
 
-cd /usr/share/hassio/homeassistant
-wget -O - https://get.hacs.xyz | bash -
+🌐 Parte 3: Configuración de Red y Acceso Externo (Router ZTE)
 
-📝 Nota del autor
+Para que el sistema sea estable y accesible desde el móvil fuera de casa, configuramos el router:
+🏠 Red Local (DHCP Binding)
 
-"Este proyecto demuestra que no hace falta comprar hardware caro para tener una casa inteligente. Un equipo que iba a la basura se ha convertido en el cerebro de mi hogar."
+Evita que el GigaTV cambie de IP interna.
+
+    Ubicación: Local Network > DHCP Server > DHCP Binding.
+
+    Configuración: Vincula la MAC del GigaTV (ej: d0:76:58:48:46:f7) a la IP 192.168.1.100.
+
+    Tip: Si da error "Invalid operation", apaga el GigaTV unos segundos para que el router libere la IP antigua y vuelve a intentar.
+
+🌎 Acceso Exterior (Port Forwarding)
+
+Abre la "puerta" para entrar desde internet.
+
+    Ubicación: Internet > Security > Port Forwarding.
+
+    Regla: Crea un "New Item" con el nombre HomeAssistant.
+
+    Protocolo: TCP.
+
+    Puertos: WAN Port 8123 -> LAN Host Port 8123.
+
+    IP Destino: 192.168.1.100.
+
+📖 Glosario Rápido de Red
+
+    MAC Address: El DNI físico de tu GigaTV (No cambia).
+
+    IP Local: La dirección interna (ej: 192.168.1.100).
+
+    IP Pública: Tu dirección en Internet.
+
+    Puerto 8123: El "timbre" al que llama Home Assistant.
+
+🛡️ Seguridad Final
+
+Una vez abierto el acceso externo, es obligatorio:
+
+    Tener una contraseña robusta.
+
+    Activar el MFA (Doble factor de autenticación) en tu perfil de Home Assistant.
