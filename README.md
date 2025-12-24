@@ -28,7 +28,9 @@ El GigaTV requiere un "punto de entrada" mediante tarjeta SD antes de pasar el s
 
     Primer Arranque: * Introduce la SD en el GigaTV.
 
-        Introduce un palillo en el puerto AV (botón reset oculto), mantén presionado y conecta la alimentación.
+        Introduce un palillo en el puerto AV (botón reset oculto), mantén presionado y conecta la alimentación. Yo lo he reiniciado por ADB: Para un reinicio normal del sistema operativo: adb reboot.
+Para ir al modo de recuperación: adb reboot recovery.
+Para ir al modo bootloader (fastboot): adb reboot bootloader
 
         Suelta cuando veas el logo de Armbian.
 
